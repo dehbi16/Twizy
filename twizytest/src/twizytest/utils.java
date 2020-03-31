@@ -50,8 +50,8 @@ public class utils {
 			e.printStackTrace();
 		}
 	}
-	public static void exo01() {
-		Mat mat = LectureImage("ref30.jpg");
+	public static void exo01(String title) {
+		Mat mat = LectureImage(title);
 		Vector<Mat> channels = new Vector <Mat>();
 		Core.split(mat, channels);
 		ImShow("", mat);
@@ -73,8 +73,8 @@ public class utils {
 
 	}
 
-	public static void exo02() {
-		Mat m = LectureImage("ref30.jpg");
+	public static void exo02(String title) {
+		Mat m = LectureImage(title);
 		Mat output = Mat.zeros(m.size(), m.type());
 		Imgproc.cvtColor(m, output, Imgproc.COLOR_BGR2HSV);
 		ImShow("HSV",output);
@@ -101,8 +101,8 @@ public class utils {
 
 	}
 	
-	public static void exo03() { //seuillage
-		Mat m = LectureImage("ref30.jpg");
+	public static void exo03(String title) { //seuillage
+		Mat m = LectureImage(title);
 		ImShow("", m);
 		Mat hsv_image = Mat.zeros(m.size(), m.type());
 		Imgproc.cvtColor(m, hsv_image, Imgproc.COLOR_BGR2HSV);
@@ -112,11 +112,11 @@ public class utils {
 		Mat threshold_3 = new Mat();
 		Mat threshold_4 = new Mat();
 		Mat threshold_5 = new Mat();
-		Core.inRange(hsv_image, new Scalar(0,100,100), new Scalar(20,255,255), threshold_1); 
+		Core.inRange(hsv_image, new Scalar(0,100,100), new Scalar(20,255,255), threshold_1); //rouge
 		Core.inRange(hsv_image, new Scalar(160,100,100), new Scalar(179,255,255), threshold_2);
-		Core.inRange(hsv_image, new Scalar(107,100,100), new Scalar(118,255,255), threshold_3);
-		Core.inRange(hsv_image, new Scalar(30,100,100), new Scalar(50,255,255), threshold_4);
-		Core.inRange(hsv_image, new Scalar(0,0,0), new Scalar(0,100,100), threshold_5);
+		Core.inRange(hsv_image, new Scalar(107,100,100), new Scalar(118,255,255), threshold_3);//bleu
+		Core.inRange(hsv_image, new Scalar(30,100,100), new Scalar(50,255,255), threshold_4);//jaune
+		Core.inRange(hsv_image, new Scalar(0,0,0), new Scalar(0,100,100), threshold_5);//noir
 		
 		Core.bitwise_or(threshold_1, threshold_2, threshold);
 		Core.bitwise_or(threshold, threshold_3, threshold);
@@ -127,8 +127,8 @@ public class utils {
 		ImShow("2", threshold);
 	}
 	
-	public static void exo04() { // detection des contours
-		Mat m = LectureImage("ref30.jpg");
+	public static void exo04(String title) { // detection des contours
+		Mat m = LectureImage(title);
 		ImShow("1", m);
 		Mat hsv_image = Mat.zeros(m.size(), m.type());
 		Imgproc.cvtColor(m, hsv_image, Imgproc.COLOR_BGR2HSV);
@@ -151,8 +151,8 @@ public class utils {
 	
 	}
 	
-	public static void exo05() {
-		Mat m = LectureImage("ref30.jpg");
+	public static void exo05(String title) {
+		Mat m = LectureImage(title);
 		ImShow("", m);
 		Mat hsv_image = Mat.zeros(m.size(), m.type());
 		Imgproc.cvtColor(m, hsv_image, Imgproc.COLOR_BGR2HSV);
@@ -180,12 +180,8 @@ public class utils {
 		ImShow("3", drawing);
 	}
 
-	public static void exo06() {
-		Mat m = LectureImage("circles_rectangles.jpg");
-		ImShow("1", m);
-		Mat hsv_image = Mat.zeros(m.size(), m.type());
-		Imgproc.cvtColor(m, hsv_image, Imgproc.COLOR_BGR2HSV);
-		ImShow("2", hsv_image);
+	public static void exo06(String title) {
+		
 	}
 	
 }
