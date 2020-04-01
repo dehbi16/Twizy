@@ -1,2 +1,2 @@
-# Twizy
+# Twizy2
 project
