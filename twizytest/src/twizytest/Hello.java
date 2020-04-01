@@ -39,7 +39,7 @@ public class Hello {
 		
 		 
 		
-		Mat m = utils.LectureImage("s_p4.jpg");
+		Mat m = utils.LectureImage("s_p9.jpg");
 		utils.ImShow("", m);
 		Mat hsv_image = Mat.zeros(m.size(), m.type());
 		
@@ -50,7 +50,7 @@ public class Hello {
 		Mat threshold_2 = new Mat();
 		
 		Core.inRange(hsv_image, new Scalar(0,100,100), new Scalar(20,255,255), threshold_1); //rouge
-		Core.inRange(hsv_image, new Scalar(160,100,100), new Scalar(179,255,255), threshold_2); //rouge
+		Core.inRange(hsv_image, new Scalar(160,100,100), new Scalar(180,255,255), threshold_2); //rouge
 		
 		
 		Core.bitwise_or(threshold_1, threshold_2, threshold);
@@ -58,6 +58,8 @@ public class Hello {
 		Imgproc.GaussianBlur(threshold, threshold, new Size(9,9), 2,2);
 		utils.ImShow("2", threshold);
 			
+		
+		
 		
 		
 		int thresh = 100;
@@ -77,6 +79,13 @@ public class Hello {
 	
 		utils.ImShow("3", drawing);
 		
+		
+		
+		
+		
+		
+		
+		
 		MatOfPoint2f matOfPoint2f = new MatOfPoint2f();
 		float[] radius = new float[1];
 		Point center = new Point();
@@ -85,13 +94,14 @@ public class Hello {
 			double contourArea = Imgproc.contourArea(contour);
 			matOfPoint2f.fromList(contour.toList());
 			Imgproc.minEnclosingCircle(matOfPoint2f, center, radius);
-			if((contourArea/(Math.PI*radius[0]*radius[0]*radius[0])) >= 0.8) {
+			
+			if((contourArea/(Math.PI*radius[0]*radius[0])) >= 0.8) {
+				System.out.println(contourArea+" ");
 				Core.circle(m, center, (int) radius[0], new Scalar(0, 255, 0), 2);
 			}
 		}
 		utils.ImShow("Détection des cercles rouges", m);
 	
-		//List<MatOfPoint> contours1  = (List<MatOfPoint>) drawing;
 		 
 	   }
 	
