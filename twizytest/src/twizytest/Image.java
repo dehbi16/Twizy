@@ -52,7 +52,9 @@ public class Image {
 		}
 	}
 
-	public static Mat DetecterRouge(Mat m) {
+	
+
+	public static ArrayList<Mat> DetecterPanneau (Mat m) {
 		Mat hsv_image = Mat.zeros(m.size(), m.type());
 
 		Imgproc.cvtColor(m, hsv_image, Imgproc.COLOR_BGR2HSV);
@@ -67,17 +69,14 @@ public class Image {
 		Core.bitwise_or(threshold_1, threshold_2, threshold);
 
 		Imgproc.GaussianBlur(threshold, threshold, new Size(9,9), 2,2);
-		return threshold ;
-	}
-
-	public static ArrayList<Mat> DetecterContour (Mat m) {
-
+		
+		
 		int thresh = 100;
 		Mat canny_output = new Mat();
 
 		List<MatOfPoint> contours = new ArrayList<MatOfPoint>();
 		MatOfInt4 hierarchy = new MatOfInt4();
-		Imgproc.Canny(m, canny_output, thresh, thresh*2);
+		Imgproc.Canny(threshold, canny_output, thresh, thresh*2);
 		Imgproc.findContours(canny_output, contours, hierarchy,Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
 		Mat drawing = Mat.zeros(canny_output.size(), CvType.CV_8UC3);
 		Random rand = new Random();
@@ -85,6 +84,8 @@ public class Image {
 			Scalar color  = new Scalar(rand.nextInt(255 - 0 + 1),rand.nextInt(255 - 0 + 1),rand.nextInt(255 - 0 + 1));
 			Imgproc.drawContours(drawing, contours, i, color, 1,8,hierarchy, 0, new Point());
 		}
+		
+
 
 		MatOfPoint2f matOfPoint2f = new MatOfPoint2f();
 		float[] radius = new float[1];
@@ -100,8 +101,8 @@ public class Image {
 			Imgproc.minEnclosingCircle(matOfPoint2f, center, radius);
 
 			if((contourArea/(Math.PI*radius[0]*radius[0])) >= 0.8) {
-				Core.circle(m, center, (int) radius[0], new Scalar(0, 255, 0), 2);
-				Core.rectangle(m, new Point(rect.x,rect.y), new Point(rect.x+rect.width,rect.y+rect.height), new Scalar (0, 255, 0), 2);
+				//Core.circle(m, center, (int) radius[0], new Scalar(0, 255, 0), 2);
+				//Core.rectangle(m, new Point(rect.x,rect.y), new Point(rect.x+rect.width,rect.y+rect.height), new Scalar (0, 255, 0), 2);
 				Mat tmp = m.submat(rect.y,rect.y+rect.height,rect.x,rect.x+rect.width);
 				Mat sign = Mat.zeros(tmp.size(),tmp.type());
 				tmp.copyTo(sign);
@@ -109,5 +110,12 @@ public class Image {
 			}
 		}
 		return imgDetec;
+	}
+	
+	
+	public static boolean estnoir(double[] ds) {
+		if (ds[0]<100 && ds[1]<100 && ds[1]<100 ) return true;
+		else return false;
+		
 	}
 }

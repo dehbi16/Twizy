@@ -42,7 +42,7 @@ public class Main {
 	{
 
 		System.loadLibrary( Core.NATIVE_LIBRARY_NAME );
-		
+
 		List <Mat> imgref = new ArrayList<Mat>();
 		imgref.add(Image.LectureImage("ref110.jpg"));
 		imgref.add(Image.LectureImage("ref90.jpg"));
@@ -51,45 +51,59 @@ public class Main {
 		imgref.add(Image.LectureImage("ref30.jpg"));
 		imgref.add(Image.LectureImage("refdouble.jpg"));
 
-		
 
-		Mat m = Image.LectureImage("s_p10.jpg");
+		Mat m = Image.LectureImage("s_p2.jpg");
 		Image.ImShow("", m);
- 
-		Mat threshold = new Mat();
-		threshold = Image.DetecterRouge(m);
+		
 
 		ArrayList<Mat> imgDetec = new ArrayList<Mat>(); 
-		imgDetec = Image.DetecterContour( threshold);
-		
-		for (int i=0; i<imgDetec.size();i++) {
-			Image.ImShow("", imgDetec.get(i));
+		imgDetec = Image.DetecterPanneau(m);
+
+
+
+
+
+
+
+		Mat panneauref = imgref.get(3);
+		Mat object = imgDetec.get(0);
+		Mat sObject = new Mat();
+		Imgproc.resize(object, sObject, panneauref.size());
+
+		Mat grayObjet = new Mat(sObject.rows(), sObject.cols(), sObject.type());
+		Imgproc.cvtColor(sObject, grayObjet, Imgproc.COLOR_BGRA2GRAY);
+		Core.normalize(grayObjet, grayObjet, 0, 255, Core.NORM_MINMAX);
+
+
+		Mat graySign = new Mat(panneauref.rows(), panneauref.cols(), panneauref.type());
+		Imgproc.cvtColor(panneauref, graySign, Imgproc.COLOR_BGRA2GRAY);
+		Core.normalize(graySign, graySign, 0, 255, Core.NORM_MINMAX);
+
+		Image.ImShow("", sObject);
+
+		//Image.ImShow("", panneauref);
+
+		int nombreNoirRef = 0;
+		int nombreNoir = 0;
+
+		for (int i=0;i<sObject.width();i++) {
+			for (int j=0; j<sObject.height(); j++) {
+				if ( Image.estnoir(sObject.get(i, j)) ) nombreNoir++;
+				if ( Image.estnoir(panneauref.get(i, j)) ) nombreNoirRef++;
+
+			}
 		}
 
 
+		System.out.println("nombreNoirRef = "+nombreNoirRef);
+		System.out.println("nombreNoir = "+nombreNoir);
 
-
-
-		/*
-
-
-		Mat sroadSign = utils.LectureImage("ref70.jpg");
-		Mat sObject = new Mat();
-		Imgproc.resize(imgDetec.get(0), sObject, sroadSign.size());
-		Mat grayObject = new Mat(sObject.rows(), sObject.cols(), sObject.type());
-		Imgproc.cvtColor(sObject, grayObject, Imgproc.COLOR_BGRA2GRAY);
-		Core.normalize(grayObject, grayObject, 0, 255, Core.NORM_MINMAX);
-
-
-
-		Mat graySign = new Mat(sroadSign.rows(), sroadSign.cols(), sroadSign.type());
-		Imgproc.cvtColor(sroadSign, graySign, Imgproc.COLOR_BGRA2GRAY);
-		Core.normalize(graySign, graySign, 0, 255, Core.NORM_MINMAX);
+		//System.out.println(sObject.get(22, 22));
 
 
 
 		//afficheImage("Panneau extrait de l'image",object);
-
+		/*
 
 		FeatureDetector orbDescriptor = FeatureDetector.create(FeatureDetector.ORB);
 		DescriptorExtractor orbExtractor = DescriptorExtractor.create(DescriptorExtractor.ORB);
@@ -115,7 +129,7 @@ public class Main {
 		System.out.println();
 		Mat marchedImage = new Mat(sroadSign.rows(), 2*sroadSign.cols(),sroadSign.type());
 		Features2d.drawMatches(sObject, objectKeyPoints, sroadSign, signKeyPoints, matchs, marchedImage);
-		utils.ImShow("", marchedImage);
+		Image.ImShow("", marchedImage);
 		List myList = matchs.toList();
 		/*
 
@@ -131,8 +145,8 @@ public class Main {
         Mat template=null;
         //String filePath="C:\\Users\\mesutpiskin\\Desktop\\Object Detection\\Template Matching\\Sample Image\\";
         //Load image file
-        source=imgDetec.get(0);
-        template=sroadSign;
+        source=Image.LectureImage("s_p10.jpg");
+        template=Image.LectureImage("ref30.jpg");
 
         Mat outputImage=new Mat();    
         int machMethod=Imgproc.TM_CCOEFF;
@@ -152,12 +166,11 @@ public class Main {
             System.out.println(mmr.maxLoc);
         }
         //Draw rectangle on result image
-       Core.rectangle(source, matchLoc, new Point(matchLoc.x + template.cols(),
-               matchLoc.y + template.rows()), new Scalar(0, 255, 0));
-        utils.ImShow("", source);
-
-
+       Core.rectangle(source, matchLoc, new Point(matchLoc.x + template.cols(), matchLoc.y + template.rows()), new Scalar(0, 255, 0));
+       Image.ImShow("", source);
 		 */
+
+
 	}
 
 
