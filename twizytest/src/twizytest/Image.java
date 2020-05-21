@@ -1,8 +1,10 @@
 package twizytest;
 
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferByte;
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -52,8 +54,6 @@ public class Image {
 		}
 	}
 
-	
-
 	public static ArrayList<Mat> DetecterPanneau (Mat m) {
 		Mat hsv_image = Mat.zeros(m.size(), m.type());
 
@@ -69,8 +69,8 @@ public class Image {
 		Core.bitwise_or(threshold_1, threshold_2, threshold);
 
 		Imgproc.GaussianBlur(threshold, threshold, new Size(9,9), 2,2);
-		
-		
+
+
 		int thresh = 100;
 		Mat canny_output = new Mat();
 
@@ -84,7 +84,7 @@ public class Image {
 			Scalar color  = new Scalar(rand.nextInt(255 - 0 + 1),rand.nextInt(255 - 0 + 1),rand.nextInt(255 - 0 + 1));
 			Imgproc.drawContours(drawing, contours, i, color, 1,8,hierarchy, 0, new Point());
 		}
-		
+
 
 
 		MatOfPoint2f matOfPoint2f = new MatOfPoint2f();
@@ -103,7 +103,7 @@ public class Image {
 			if((contourArea/(Math.PI*radius[0]*radius[0])) >= 0.8) {
 				//Core.circle(m, center, (int) radius[0], new Scalar(0, 255, 0), 2);
 				//Core.rectangle(m, new Point(rect.x,rect.y), new Point(rect.x+rect.width,rect.y+rect.height), new Scalar (0, 255, 0), 2);
-				Mat tmp = m.submat(rect.y,rect.y+rect.height,rect.x,rect.x+rect.width);
+				Mat tmp = m.submat(rect.y, rect.y+rect.height, rect.x, rect.x+rect.width);
 				Mat sign = Mat.zeros(tmp.size(),tmp.type());
 				tmp.copyTo(sign);
 				imgDetec.add(sign);
@@ -111,11 +111,102 @@ public class Image {
 		}
 		return imgDetec;
 	}
-	
-	
+
+	public static void matching (Mat object){
+		List <Mat> imgref = new ArrayList<Mat>();
+		imgref.add(Image.LectureImage("ref110.jpg"));
+		imgref.add(Image.LectureImage("ref90.jpg"));
+		imgref.add(Image.LectureImage("ref70.jpg"));
+		imgref.add(Image.LectureImage("ref50.jpg"));
+		imgref.add(Image.LectureImage("ref30.jpg"));
+		imgref.add(Image.LectureImage("refdouble.jpg"));
+
+		Mat sObject = new Mat();
+		Imgproc.resize(object, sObject, imgref.get(2).size());
+
+		Mat grayObjet = new Mat(sObject.rows(), sObject.cols(), sObject.type());
+		Imgproc.cvtColor(sObject, grayObjet, Imgproc.COLOR_BGRA2GRAY);
+		Core.normalize(grayObjet, grayObjet, 0, 255, Core.NORM_MINMAX);
+
+		Mat hsv_imageOb = Mat.zeros(sObject.size(), sObject.type());
+		Imgproc.cvtColor(sObject, hsv_imageOb, Imgproc.COLOR_BGR2HSV);
+		Mat thresholdOb = new Mat();
+		//Core.inRange(hsv_imageOb, new Scalar(0,0,0), new Scalar(255,255,100), thresholdOb); 
+		Core.inRange(hsv_imageOb, new Scalar(0,0,0), new Scalar(255,255,130), thresholdOb); 
+
+		Imgproc.GaussianBlur(thresholdOb, thresholdOb, new Size(9,9), 2,2);
+
+		List<Integer> cmp = new ArrayList<Integer>();
+		int a;
+		int nbzeros ;
+		for (int k=0; k<imgref.size();k++) {
+			Mat panneauref = imgref.get(k);
+
+
+			Mat graySign = new Mat(panneauref.rows(), panneauref.cols(), panneauref.type());
+			Imgproc.cvtColor(panneauref, graySign, Imgproc.COLOR_BGRA2GRAY);
+			Core.normalize(graySign, graySign, 0, 255, Core.NORM_MINMAX);
+
+			Mat hsv_imageRef = Mat.zeros(panneauref.size(), panneauref.type());
+			Imgproc.cvtColor(panneauref, hsv_imageRef, Imgproc.COLOR_BGR2HSV);
+
+
+			Mat thresholdRef = new Mat();
+			//Core.inRange(hsv_imageRef, new Scalar(0,0,0), new Scalar(255,100,130), thresholdRef); 
+			Core.inRange(hsv_imageRef, new Scalar(0,0,0), new Scalar(255,50,130), thresholdRef); 
+
+			Imgproc.GaussianBlur(thresholdRef, thresholdRef, new Size(9,9), 2,2);
+
+			nbzeros=0;
+			a=0;	
+			for (int i=0; i<thresholdOb.width();i++) {
+				for (int j=0; j<thresholdOb.height();j++) {
+					a = (int) Math.abs((thresholdOb.get(i, j)[0] - thresholdRef.get(i, j)[0]));
+					if (a==0 && thresholdOb.get(i, j)[0]>0) nbzeros++;
+				}
+			}
+			cmp.add(nbzeros);
+		}
+
+		int index=0;
+		int  ref = cmp.get(0);
+		for (int j=1;j<cmp.size();j++) {
+			if (cmp.get(j)>ref) {
+				ref = cmp.get(j);
+				index = j;
+			}
+		}
+		Image.ImShow("", imgref.get(index));
+		switch(index){
+		case -1:break;
+		case 0:System.out.println("Panneau 110 détécté");break;
+		case 1:System.out.println("Panneau 90 détécté");break;
+		case 2:System.out.println("Panneau 70 détécté");break;
+		case 3:System.out.println("Panneau 50 détécté");break;
+		case 4:System.out.println("Panneau 30 détécté");break;
+		case 5:System.out.println("Panneau interdiction de dépasser détécté");break;}
+
+	}
+
+	public static BufferedImage Mat2BufferedImage(Mat m) {
+	    //Method converts a Mat to a Buffered Image
+	    int type = BufferedImage.TYPE_BYTE_GRAY;
+	     if ( m.channels() > 1 ) {
+	         type = BufferedImage.TYPE_3BYTE_BGR;
+	     }
+	     int bufferSize = m.channels()*m.cols()*m.rows();
+	     byte [] b = new byte[bufferSize];
+	     m.get(0,0,b); // get all the pixels
+	     BufferedImage image = new BufferedImage(m.cols(),m.rows(), type);
+	     final byte[] targetPixels = ((DataBufferByte) image.getRaster().getDataBuffer()).getData();
+	     System.arraycopy(b, 0, targetPixels, 0, b.length);  
+	     return image;
+	    }
+
 	public static boolean estnoir(double[] ds) {
-		if (ds[0]<100 && ds[1]<100 && ds[1]<100 ) return true;
+		int seuil = 30;
+		if (ds[0]<seuil && ds[1]<seuil && ds[1]<seuil ) return true;
 		else return false;
-		
+
 	}
 }
