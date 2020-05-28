@@ -60,13 +60,18 @@ public class Main {
 
 	private static Mat m ;
 	private static ArrayList<Mat> imgDetec = new ArrayList<Mat>(); 
-	
+
 	public static void main( String[] args ){
 
 
-	
-		System.loadLibrary( Core.NATIVE_LIBRARY_NAME );
 
+		System.loadLibrary( Core.NATIVE_LIBRARY_NAME );
+		
+		
+		
+		
+		
+/*
 		int width = 1000;
 		int height = 600;
 		JFrame frame = new JFrame("Détécter les panneaux");
@@ -140,51 +145,92 @@ public class Main {
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setLocationRelativeTo(null);
 		frame.setVisible(true);
+		 
 
 
+*/
+		
+		
+		List <Mat> imgref = new ArrayList<Mat>();
+		imgref.add(Image.LectureImage("ref110.jpg"));
+		imgref.add(Image.LectureImage("ref90.jpg"));
+		imgref.add(Image.LectureImage("ref70.jpg"));
+		imgref.add(Image.LectureImage("ref50.jpg"));
+		imgref.add(Image.LectureImage("ref30.jpg"));
+		imgref.add(Image.LectureImage("refdouble.jpg"));
 
-		/*
-		 //Create new MAT object
-	    Mat frame = new Mat();
+		JFrame jframe = new JFrame("Detection de panneaux sur un flux vidéo");
+		jframe.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		JLabel vidpanel = new JLabel();
+		jframe.setContentPane(vidpanel);
+		jframe.setSize(720, 480);
+		jframe.setVisible(true);
 
-	    //Create new VideoCapture object
-	    VideoCapture camera = new VideoCapture("video1.avi");
-	    //Create new JFrame object	        
-	    System.out.println(camera.isOpened());
+		Mat frame = new Mat();
+		VideoCapture camera = new VideoCapture("video1.avi");
 
-	    JFrame jframe = new JFrame("Video Title");
+		int index = -1;
+		//int index1 = -1;
+		int tab[] = new int[6] ;
+		while (camera.read(frame)) {
+			//A completer
+			ImageIcon image = new ImageIcon(Image.Mat2bufferedImage(frame));
+			vidpanel.setIcon(image);
+			vidpanel.repaint();
+			imgDetec = Image.DetecterPanneau(frame);
+			
+			if (imgDetec.size()!=0) {
+				for (int i=0;i<imgDetec.size();i++) {
+					if (imgDetec.get(i).size().height>=25 && imgDetec.get(i).size().width >= 25 ) {
+						Object[] resultat = (Object[]) Image.matching(imgDetec.get(i));
+						m = (Mat) resultat[0];
+						index = (int) resultat[1];
+						tab[index]++;
+					}
 
-	    //Inform jframe what to do in the event that you close the program
-	    jframe.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-	    //Create a new JLabel object vidpanel
-	    JLabel vidPanel = new JLabel();
-
-	    //assign vidPanel to jframe
-	    jframe.setContentPane(vidPanel);
-
-	    //set frame size
-	    jframe.setSize(1000, 500);
-
-	    //make jframe visible
-	    jframe.setVisible(true);
-
-	    while (true) {
-	        //If next video frame is available
-	        if (camera.read(frame)) {
-	            //Create new image icon object and convert Mat to Buffered Image
-
-	            ImageIcon image = new ImageIcon(Image.Mat2BufferedImage(frame));
-	            //Update the image in the vidPanel
-	            vidPanel.setIcon(image);
-	            //Update the vidPanel in the JFrame
-	            vidPanel.repaint();
-
-	        }
-	    }
-
-		 */
+				}
+			}
+			else {
+				if (!estnull(tab)) {
+					int s=tab[0];
+					int j=0;
+					for (int i=1;i<tab.length;i++) {
+						if (tab[i]>s) {
+							s = tab[i];
+							j=i;
+						}
+					}
+					Image.ImShow("", imgref.get(j));
+					switch(j){
+					case -1:break;
+					case 0:System.out.println("Panneau 110 détecté");break;
+					case 1:System.out.println("Panneau 90 détecté");break;
+					case 2:System.out.println("Panneau 70 détecté");break;
+					case 3:System.out.println("Panneau 50 détecté");break;
+					case 4:System.out.println("Panneau 30 détecté");break;
+					case 5:System.out.println("Panneau interdiction de dépasser détecté");break;}
+					for (int i=0;i<6;i++) tab[i]=0;
+					
+				}
+			}
+			
+		}
 
 
 	}
+
+	private static boolean estnull(int[] tab) {
+		// TODO Auto-generated method stub
+		for (int i=0;i<tab.length;i++) {
+			if (tab[i]!=0) return false;
+		}
+		return true;
+	}
+
+
+
+
+
+
+
 }

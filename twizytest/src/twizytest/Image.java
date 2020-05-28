@@ -19,17 +19,26 @@ import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfByte;
+import org.opencv.core.MatOfDMatch;
 import org.opencv.core.MatOfInt4;
+import org.opencv.core.MatOfKeyPoint;
 import org.opencv.core.MatOfPoint;
 import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
+import org.opencv.features2d.DMatch;
+import org.opencv.features2d.DescriptorExtractor;
+import org.opencv.features2d.DescriptorMatcher;
+import org.opencv.features2d.FeatureDetector;
+import org.opencv.features2d.Features2d;
 import org.opencv.highgui.Highgui;
 import org.opencv.imgproc.Imgproc;
 
 public class Image {
+	
+
 	public static Mat LectureImage(String fichier) {
 		File f = new File (fichier);
 		Mat m = Highgui.imread(f.getAbsolutePath());
@@ -112,7 +121,8 @@ public class Image {
 		return imgDetec;
 	}
 
-	public static void matching (Mat object){
+	public static Object[] matching (Mat object){
+		
 		List <Mat> imgref = new ArrayList<Mat>();
 		imgref.add(Image.LectureImage("ref110.jpg"));
 		imgref.add(Image.LectureImage("ref90.jpg"));
@@ -120,9 +130,8 @@ public class Image {
 		imgref.add(Image.LectureImage("ref50.jpg"));
 		imgref.add(Image.LectureImage("ref30.jpg"));
 		imgref.add(Image.LectureImage("refdouble.jpg"));
-
 		Mat sObject = new Mat();
-		Imgproc.resize(object, sObject, imgref.get(2).size());
+		Imgproc.resize(object, sObject, imgref.get(0).size());
 
 		Mat grayObjet = new Mat(sObject.rows(), sObject.cols(), sObject.type());
 		Imgproc.cvtColor(sObject, grayObjet, Imgproc.COLOR_BGRA2GRAY);
@@ -132,11 +141,11 @@ public class Image {
 		Imgproc.cvtColor(sObject, hsv_imageOb, Imgproc.COLOR_BGR2HSV);
 		Mat thresholdOb = new Mat();
 		//Core.inRange(hsv_imageOb, new Scalar(0,0,0), new Scalar(255,255,100), thresholdOb); 
-		Core.inRange(hsv_imageOb, new Scalar(0,0,0), new Scalar(255,255,130), thresholdOb); 
+		Core.inRange(hsv_imageOb, new Scalar(0,0,0), new Scalar(255,255,100), thresholdOb); 
 
-		Imgproc.GaussianBlur(thresholdOb, thresholdOb, new Size(9,9), 2,2);
-
-		List<Integer> cmp = new ArrayList<Integer>();
+		Imgproc.GaussianBlur(thresholdOb, thresholdOb, new Size(3,3), 2,2);
+		//ImShow("", thresholdOb);
+		int cmp[] = new int[imgref.size()] ;
 		int a;
 		int nbzeros ;
 		for (int k=0; k<imgref.size();k++) {
@@ -156,57 +165,47 @@ public class Image {
 			Core.inRange(hsv_imageRef, new Scalar(0,0,0), new Scalar(255,50,130), thresholdRef); 
 
 			Imgproc.GaussianBlur(thresholdRef, thresholdRef, new Size(9,9), 2,2);
-
+			
 			nbzeros=0;
 			a=0;	
-			for (int i=0; i<thresholdOb.width();i++) {
-				for (int j=0; j<thresholdOb.height();j++) {
+			for (int i=40; i<thresholdOb.width()-40;i++) {
+				for (int j=40; j<thresholdOb.height()-40;j++) {
 					a = (int) Math.abs((thresholdOb.get(i, j)[0] - thresholdRef.get(i, j)[0]));
-					if (a==0 && thresholdOb.get(i, j)[0]>0) nbzeros++;
+					if (a==0 && thresholdRef.get(i, j)[0]>0) nbzeros++;
 				}
 			}
-			cmp.add(nbzeros);
+			cmp[k]=nbzeros;
 		}
-
 		int index=0;
-		int  ref = cmp.get(0);
-		for (int j=1;j<cmp.size();j++) {
-			if (cmp.get(j)>ref) {
-				ref = cmp.get(j);
+		int  ref = cmp[0];
+		for (int j=1;j<cmp.length;j++) {
+			if (cmp[j]>ref) {
+				ref = cmp[j];
 				index = j;
 			}
 		}
-		Image.ImShow("", imgref.get(index));
-		switch(index){
-		case -1:break;
-		case 0:System.out.println("Panneau 110 détécté");break;
-		case 1:System.out.println("Panneau 90 détécté");break;
-		case 2:System.out.println("Panneau 70 détécté");break;
-		case 3:System.out.println("Panneau 50 détécté");break;
-		case 4:System.out.println("Panneau 30 détécté");break;
-		case 5:System.out.println("Panneau interdiction de dépasser détécté");break;}
+		//Image.ImShow("", imgref.get(index));
 
+		Object[] monResultat = { imgref.get(index) , index };
+		return monResultat;
+	}
+	
+	
+
+	public static BufferedImage Mat2bufferedImage(Mat image) {
+		MatOfByte bytemat = new MatOfByte();
+		Highgui.imencode(".jpg", image, bytemat);
+		byte[] bytes = bytemat.toArray();
+		InputStream in = new ByteArrayInputStream(bytes);
+		BufferedImage img = null;
+		try {
+			img = ImageIO.read(in);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return img;
 	}
 
-	public static BufferedImage Mat2BufferedImage(Mat m) {
-	    //Method converts a Mat to a Buffered Image
-	    int type = BufferedImage.TYPE_BYTE_GRAY;
-	     if ( m.channels() > 1 ) {
-	         type = BufferedImage.TYPE_3BYTE_BGR;
-	     }
-	     int bufferSize = m.channels()*m.cols()*m.rows();
-	     byte [] b = new byte[bufferSize];
-	     m.get(0,0,b); // get all the pixels
-	     BufferedImage image = new BufferedImage(m.cols(),m.rows(), type);
-	     final byte[] targetPixels = ((DataBufferByte) image.getRaster().getDataBuffer()).getData();
-	     System.arraycopy(b, 0, targetPixels, 0, b.length);  
-	     return image;
-	    }
 
-	public static boolean estnoir(double[] ds) {
-		int seuil = 30;
-		if (ds[0]<seuil && ds[1]<seuil && ds[1]<seuil ) return true;
-		else return false;
-
-	}
 }
