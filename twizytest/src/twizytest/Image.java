@@ -78,7 +78,7 @@ public class Image {
 		Core.bitwise_or(threshold_1, threshold_2, threshold);
 
 		Imgproc.GaussianBlur(threshold, threshold, new Size(9,9), 2,2);
-
+		
 
 		int thresh = 100;
 		Mat canny_output = new Mat();
@@ -94,7 +94,7 @@ public class Image {
 			Imgproc.drawContours(drawing, contours, i, color, 1,8,hierarchy, 0, new Point());
 		}
 
-
+		
 
 		MatOfPoint2f matOfPoint2f = new MatOfPoint2f();
 		float[] radius = new float[1];
@@ -110,14 +110,16 @@ public class Image {
 			Imgproc.minEnclosingCircle(matOfPoint2f, center, radius);
 
 			if((contourArea/(Math.PI*radius[0]*radius[0])) >= 0.8) {
-				//Core.circle(m, center, (int) radius[0], new Scalar(0, 255, 0), 2);
-				//Core.rectangle(m, new Point(rect.x,rect.y), new Point(rect.x+rect.width,rect.y+rect.height), new Scalar (0, 255, 0), 2);
+				Core.circle(m, center, (int) radius[0], new Scalar(0, 255, 0), 2);
+				Core.rectangle(m, new Point(rect.x,rect.y), new Point(rect.x+rect.width,rect.y+rect.height), new Scalar (0, 255, 0), 2);
 				Mat tmp = m.submat(rect.y, rect.y+rect.height, rect.x, rect.x+rect.width);
 				Mat sign = Mat.zeros(tmp.size(),tmp.type());
 				tmp.copyTo(sign);
 				imgDetec.add(sign);
+				//ImShow("", sign);
 			}
 		}
+		
 		return imgDetec;
 	}
 
@@ -184,7 +186,7 @@ public class Image {
 				index = j;
 			}
 		}
-		//Image.ImShow("", imgref.get(index));
+		Image.ImShow("", imgref.get(index));
 
 		Object[] monResultat = { imgref.get(index) , index };
 		return monResultat;
